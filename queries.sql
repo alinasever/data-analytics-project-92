@@ -56,3 +56,30 @@ where
 	avg_income < sum_avg
 order by‹›
 	average_income asc
+
+--выручка по дням недели
+select 
+	TRIM(concat(emp.first_name, ' ', emp.last_name )) as seller
+	,
+	trim (to_char(sale.sale_date, 'Day')) as day_of_week
+	,
+	floor (sum (sale.quantity * prod.price)) as income
+from
+	employees emp
+inner join sales sale on
+	emp.employee_id = sale.sales_person_id
+inner join products prod on
+	prod.product_id = sale.product_id
+group by
+	seller,
+	extract (isoDOW
+from
+	sale.sale_date)
+	,
+	day_of_week
+order by
+	extract (isoDOW
+from
+	sale.sale_date)
+	,
+	seller;
