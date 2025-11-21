@@ -22,3 +22,37 @@ group by
 order by
 	income desc
 limit 10
+
+-- меньше средней выручки
+with sellers_avg as (
+select 
+	trim (concat(first_name, ' ', last_name)) as seller
+	,
+	SUM(prod.price * sale.quantity) / COUNT(*) as avg_income
+from
+	employees emp
+inner join sales sale on
+	emp.employee_id = sale.sales_person_id
+inner join products prod on
+	prod.product_id = sale.product_id
+group by
+	seller 
+	)
+,
+only_avg as (
+select
+	AVG(avg_income) as sum_avg
+from
+	sellers_avg
+)
+select
+	seller
+	,
+	floor(avg_income) as average_income
+from
+	sellers_avg,
+	only_avg
+where
+	avg_income < sum_avg
+order by‹›
+	average_income asc
