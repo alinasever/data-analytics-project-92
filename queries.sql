@@ -104,3 +104,55 @@ group by
 	age_category
 order by
 age_category asc 
+
+-- количество уникальных покупателей и выручка по месяцам
+select 
+	  TO_CHAR(sale.sale_date, 'YYYY-MM') as selling_month
+	,
+	COUNT(distinct sale.customer_id) as total_customers
+	,
+	floor (SUM(sale.quantity * prod.price))
+from
+	sales sale
+inner join products prod on
+	prod.product_id = sale.product_id
+group by
+	selling_month
+order by
+	selling_month
+
+-- о покупателях, первая покупка которых была в ходе проведения акций
+with first_purchase as (
+select
+	sale.customer_id,
+	sale.sales_person_id,
+	sale.sale_date,
+	prod.price,
+	row_number() over (
+        partition by sale.customer_id
+order by
+	sale.sale_date,
+	sale.sales_id
+    ) as rn
+from
+	sales sale
+inner join products prod
+        on
+	prod.product_id = sale.product_id)
+select
+	trim(concat(cust.first_name, ' ', cust.last_name)) as customer,
+	first.sale_date,
+	trim(concat(emp.first_name, ' ', emp.last_name)) as seller
+from
+	first_purchase first
+join customers cust
+    on
+	cust.customer_id = first.customer_id
+join employees emp
+    on
+	emp.employee_id = first.sales_person_id
+where
+	first.rn = 1
+	and first.price = 0
+order by
+	cust.customer_id;
