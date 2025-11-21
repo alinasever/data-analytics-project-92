@@ -54,7 +54,7 @@ from
 	only_avg
 where
 	avg_income < sum_avg
-order by‹›
+order by
 	average_income asc
 
 --выручка по дням недели
